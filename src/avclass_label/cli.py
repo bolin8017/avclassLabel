@@ -28,7 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
         "-w",
         type=int,
         default=None,
-        help="Maximum number of threads for parallel labeling (default: CPU count).",
+        help="Maximum number of threads for parallel labeling (default: min(32, CPU count + 4)).",
     )
     parser.add_argument(
         "--verbose",

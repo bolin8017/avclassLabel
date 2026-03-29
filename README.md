@@ -61,7 +61,7 @@ avclass-label -i /path/to/vt-reports
 | 參數 | 簡寫 | 說明 | 預設值 |
 |------|------|------|--------|
 | `--input_folder` | `-i` | VirusTotal JSON 報告所在的資料夾路徑（必填） | -- |
-| `--max-workers` | `-w` | 平行處理的最大執行緒數量 | CPU 核心數 |
+| `--max-workers` | `-w` | 平行處理的最大執行緒數量 | `min(32, CPU 核心數 + 4)` |
 | `--verbose` | `-v` | 啟用 DEBUG 層級日誌輸出 | 關閉 |
 
 ### 完整範例
@@ -70,11 +70,17 @@ avclass-label -i /path/to/vt-reports
 # 標註單一資料夾中的報告
 avclass-label -i ./dataset/reports
 
+# 使用完整參數名稱
+avclass-label --input_folder ./dataset/reports
+
 # 限制為 4 個執行緒
 avclass-label -i ./dataset/reports -w 4
 
 # 啟用詳細日誌
 avclass-label -i ./dataset/reports -v
+
+# 組合使用：限制執行緒數並啟用詳細日誌
+avclass-label -i ./dataset/reports -w 4 -v
 
 # 透過 Python 模組方式執行
 python -m avclass_label -i ./dataset/reports
