@@ -63,6 +63,7 @@ class Labeler:
         if one_line_data is None:
             return file_name, _ERROR_LABEL
 
+        tmp_path: Path | None = None
         try:
             with tempfile.NamedTemporaryFile(
                 mode="w",
@@ -91,7 +92,8 @@ class Labeler:
             logger.error("OS error processing %s: %s", json_path, exc)
             label = _ERROR_LABEL
         finally:
-            tmp_path.unlink(missing_ok=True)
+            if tmp_path is not None:
+                tmp_path.unlink(missing_ok=True)
 
         return file_name, label
 

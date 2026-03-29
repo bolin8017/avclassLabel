@@ -2,7 +2,7 @@
 
 > Batch-label malware families from VirusTotal JSON reports using AVClass.
 
-[![CI](https://github.com/louiskyee/avclassLabel/actions/workflows/ci.yml/badge.svg)](https://github.com/louiskyee/avclassLabel/actions/workflows/ci.yml)
+[![CI](https://github.com/bolin8017/avclassLabel/actions/workflows/ci.yml/badge.svg)](https://github.com/bolin8017/avclassLabel/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -31,7 +31,7 @@
 ### 從原始碼安裝
 
 ```bash
-git clone https://github.com/louiskyee/avclassLabel.git
+git clone https://github.com/bolin8017/avclassLabel.git
 cd avclassLabel
 pip install .
 ```
@@ -45,7 +45,7 @@ pip install -e ".[dev]"
 ### 從 Git 直接安裝
 
 ```bash
-pip install git+https://github.com/louiskyee/avclassLabel.git
+pip install git+https://github.com/bolin8017/avclassLabel.git
 ```
 
 ## 使用方法
@@ -138,7 +138,7 @@ src/avclass_label/
 ### 環境設定
 
 ```bash
-git clone https://github.com/louiskyee/avclassLabel.git
+git clone https://github.com/bolin8017/avclassLabel.git
 cd avclassLabel
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
