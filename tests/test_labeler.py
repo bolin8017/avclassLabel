@@ -27,29 +27,27 @@ class TestCollectFiles:
 
     def test_finds_all_json_files(self, populated_tmp_dir):
         labeler = _make_labeler(populated_tmp_dir["root"])
-        labeler._collect_files()
+        files = labeler._collect_files()
 
         all_json = sorted(populated_tmp_dir["valid_files"] + [populated_tmp_dir["invalid_file"]])
-        assert labeler._file_list == all_json
+        assert files == all_json
 
     def test_ignores_non_json_files(self, populated_tmp_dir):
         labeler = _make_labeler(populated_tmp_dir["root"])
-        labeler._collect_files()
+        files = labeler._collect_files()
 
         for non_json_path in populated_tmp_dir["non_json"]:
-            assert non_json_path not in labeler._file_list
+            assert non_json_path not in files
 
     def test_empty_directory(self, tmp_path):
         labeler = _make_labeler(tmp_path)
-        labeler._collect_files()
-        assert labeler._file_list == []
+        assert labeler._collect_files() == []
 
     def test_directory_with_only_non_json(self, tmp_path):
         (tmp_path / "data.csv").write_text("a,b", encoding="utf-8")
         (tmp_path / "image.png").write_bytes(b"\x89PNG")
         labeler = _make_labeler(tmp_path)
-        labeler._collect_files()
-        assert labeler._file_list == []
+        assert labeler._collect_files() == []
 
 
 # ===================================================================
@@ -252,10 +250,10 @@ class TestLabelAll:
 
     def test_csv_header_and_row_count(self, populated_tmp_dir):
         labeler = _make_labeler(populated_tmp_dir["root"])
-        labeler._collect_files()
+        files = labeler._collect_files()
 
         with patch("avclass_label.labeler.subprocess.run", side_effect=self._mock_subprocess):
-            labeler._label_all()
+            labeler._label_all(files)
 
         with labeler.config.output_path.open(encoding="utf-8") as f:
             rows = list(csv.reader(f))
@@ -266,10 +264,10 @@ class TestLabelAll:
 
     def test_rows_sorted_by_filename(self, populated_tmp_dir):
         labeler = _make_labeler(populated_tmp_dir["root"])
-        labeler._collect_files()
+        files = labeler._collect_files()
 
         with patch("avclass_label.labeler.subprocess.run", side_effect=self._mock_subprocess):
-            labeler._label_all()
+            labeler._label_all(files)
 
         with labeler.config.output_path.open(encoding="utf-8") as f:
             reader = csv.reader(f)
@@ -280,10 +278,10 @@ class TestLabelAll:
 
     def test_invalid_json_gets_error_label(self, populated_tmp_dir):
         labeler = _make_labeler(populated_tmp_dir["root"])
-        labeler._collect_files()
+        files = labeler._collect_files()
 
         with patch("avclass_label.labeler.subprocess.run", side_effect=self._mock_subprocess):
-            labeler._label_all()
+            labeler._label_all(files)
 
         with labeler.config.output_path.open(encoding="utf-8") as f:
             reader = csv.DictReader(f)
@@ -293,8 +291,7 @@ class TestLabelAll:
 
     def test_empty_directory_produces_header_only(self, tmp_path):
         labeler = _make_labeler(tmp_path)
-        labeler._collect_files()
-        labeler._label_all()
+        labeler._label_all([])
 
         with labeler.config.output_path.open(encoding="utf-8") as f:
             content = f.read()

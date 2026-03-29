@@ -17,25 +17,26 @@ from avclass_label.config import Config
 
 logger = logging.getLogger(__name__)
 
+_ERROR_LABEL = "Error"
+
 
 class Labeler:
     """Scans a directory of VirusTotal JSON reports and labels them via avclass."""
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self._file_list: list[Path] = []
 
     def run(self) -> Path:
         """Execute the full labeling pipeline. Returns the output CSV path."""
-        self._collect_files()
-        self._label_all()
+        files = self._collect_files()
+        self._label_all(files)
         logger.info("Output label.csv path: %s", self.config.output_path.resolve())
         return self.config.output_path
 
-    def _collect_files(self) -> None:
-        """Recursively find every *.json file under input_dir."""
-        self._file_list = sorted(self.config.input_dir.rglob("*.json"))
-        logger.info("Found %d JSON files.", len(self._file_list))
+    def _collect_files(self) -> list[Path]:
+        files = sorted(self.config.input_dir.rglob("*.json"))
+        logger.info("Found %d JSON files.", len(files))
+        return files
 
     @staticmethod
     def _convert_to_one_line(json_path: Path) -> str | None:
@@ -60,9 +61,8 @@ class Labeler:
 
         one_line_data = Labeler._convert_to_one_line(json_path)
         if one_line_data is None:
-            return file_name, "Error"
+            return file_name, _ERROR_LABEL
 
-        tmp_path: Path | None = None
         try:
             with tempfile.NamedTemporaryFile(
                 mode="w",
@@ -79,29 +79,28 @@ class Labeler:
                 text=True,
                 capture_output=True,
             )
-            label = result.stdout.split("\t")[1].strip()
+            first_line = result.stdout.splitlines()[0]
+            label = first_line.split("\t")[1].strip()
         except subprocess.CalledProcessError:
             logger.error("avclass failed for %s", json_path)
-            label = "Error"
+            label = _ERROR_LABEL
         except (IndexError, ValueError):
             logger.error("Unexpected avclass output for %s", json_path)
-            label = "Error"
+            label = _ERROR_LABEL
         except OSError as exc:
             logger.error("OS error processing %s: %s", json_path, exc)
-            label = "Error"
+            label = _ERROR_LABEL
         finally:
-            if tmp_path is not None:
-                tmp_path.unlink(missing_ok=True)
+            tmp_path.unlink(missing_ok=True)
 
         return file_name, label
 
-    def _label_all(self) -> None:
-        """Run _process_json over every collected file using a thread pool."""
+    def _label_all(self, files: list[Path]) -> None:
         start_time = time.monotonic()
         labels: list[tuple[str, str]] = []
 
         with ThreadPoolExecutor(max_workers=self.config.max_workers) as executor:
-            futures = {executor.submit(self._process_json, p): p for p in self._file_list}
+            futures = {executor.submit(self._process_json, p): p for p in files}
             for future in tqdm(
                 as_completed(futures),
                 total=len(futures),

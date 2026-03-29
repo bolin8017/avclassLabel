@@ -34,7 +34,6 @@ def build_parser() -> argparse.ArgumentParser:
         "--verbose",
         "-v",
         action="store_true",
-        default=False,
         help="Enable debug logging.",
     )
     return parser
